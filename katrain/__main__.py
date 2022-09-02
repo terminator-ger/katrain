@@ -39,6 +39,7 @@ import random
 import glob
 from multiprocessing.connection import Listener
 from threading import Thread
+import socket
 
 from kivy.base import ExceptionHandler, ExceptionManager
 from kivy.app import App
@@ -952,7 +953,11 @@ def run_app():
 class NetConnect(Thread):
     def __init__(self, KaTrain: KaTrainGui):
         super(NetConnect, self).__init__()
-        address = ('localhost', 8888)     # family is deduced to be 'AF_INET'
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        address = (ip, 8888)     # family is deduced to be 'AF_INET'
         self.listener = Listener(address, authkey=b'katrain')
         self.gui = None
         self.daemon=True

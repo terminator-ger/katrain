@@ -1,0 +1,1 @@
+E:\dev\py_katrain\Scripts\activate.bat & python E:\dev\katrain\katrain.py
