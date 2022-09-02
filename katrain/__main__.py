@@ -37,6 +37,8 @@ import webbrowser
 import time
 import random
 import glob
+from multiprocessing.connection import Listener
+from threading import Thread
 
 from kivy.base import ExceptionHandler, ExceptionManager
 from kivy.app import App
@@ -876,6 +878,7 @@ class KaTrainApp(MDApp):
             Window.left = win_left
             Window.top = win_top
 
+        nc = NetConnect(self.gui)
         return self.gui
 
     def on_language(self, _instance, language):
@@ -945,6 +948,29 @@ def run_app():
     app = KaTrainApp()
     signal.signal(signal.SIGINT, app.signal_handler)
     app.run()
+
+class NetConnect(Thread):
+    def __init__(self, KaTrain: KaTrainGui):
+        super(NetConnect, self).__init__()
+        address = ('localhost', 8888)     # family is deduced to be 'AF_INET'
+        self.listener = Listener(address, authkey=b'katrain')
+        self.gui = None
+        self.daemon=True
+        self.conn_acc = False
+        print('Networking Started')
+        self.gui = KaTrain
+        self.start()
+
+
+    def run(self):
+        while True:
+            if self.conn_acc == False:
+                self.conn = self.listener.accept()
+            self.conn_acc = True
+            msg = self.conn.recv()
+            if msg is not None:
+                self.gui._do_play((msg[1],msg[2]))
+
 
 
 if __name__ == "__main__":
